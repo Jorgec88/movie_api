@@ -20,7 +20,7 @@ app.use(bodyParser.json());
     {
       id: 1,
       name: "Tom",
-      favoriteMovies: ["fight club"]
+      favoriteMovies: ["pulp fiction"]
     },
     {
       id: 2,
