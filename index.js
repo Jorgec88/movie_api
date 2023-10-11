@@ -1,76 +1,77 @@
 const express = require("express"),
-//morgan = require("morgan"),
 bodyParser = require('body-parser'),
 uuid = require('uuid');
 
+const morgan = require("morgan");
 const app = express();
+const mongoose = require('mongoose');
+const Models = require('./models.js');
+const Movies = Models.Movie;
+const Users = Models.User;
+
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+mongoose.connect("mongodb://localhost:8080/jcDB", { useNewUrlParser: true, useUnifiedTopology: true });
+
 
 //app.use(express.static("public"));
 //app.use(morgan("common"));
-app.use(bodyParser.json());
+
 
 //app.use((err, req, res, next) => {
   //  console.error(err.stack);
     //res.status(500).send("Error!");
   //});
 
-  
-  
-  let users = [
-    {
-      id: 1,
-      name: "Tom",
-      favoriteMovies: ["pulp fiction"]
-    },
-    {
-      id: 2,
-      name: "Lily",
-      favoriteMovies: []
-    }
-  ]
+  app.post('/users', async (req, res) => {
+    await Users.findOne({ Username: req.body.Username })
+      .then((user) => {
+        if (user) {
+          return res.status(400).send(req.body.Username + 'already exists');
+        } else {
+          Users
+            .create({
+              Username: req.body.Username,
+              Password: req.body.Password,
+              Email: req.body.Email,
+              Birthday: req.body.Birthday
+            })
+            .then((user) =>{res.status(201).json(user) })
+          .catch((error) => {
+            console.error(error);
+            res.status(500).send('Error: ' + error);
+          })
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        res.status(500).send('Error: ' + error);
+      });
+  });
 
-  
-  let movies = [
-{
-  title: "fight club",
-  director: "David Fincher",
-  genre: "drama, thriller"
-},
-{
-  title: "natural born killers",
-  director: "Oliver Stone",
-  genre: "drama"
-},
-{
-  title: "pulp fiction",
-  director: "Quentin Tarantino",
-  genre: "thriller"
-},
-{
-  title: "leon",
-  director: "Luc Besson",
-  genre: "action, thriller"
-},
-{
-  title: "2001:a space odyssey",
-  director: "Stanley Kubrick",
-  genre: "sci-fi"
-}
- ] 
+  app.get('/users', async (req, res) => {
+    await Users.find()
+      .then((users) => {
+        res.status(201).json(users);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send('Error: ' + err);
+      });
+  });
 
- 
-
-app.post("/users", (req, res) => {
-  const newUser = req.body;
-
-  if (newUser.name) {
-    newUser.id = uuid.v4();
-    users.push(newUser);
-    res.status(201).json(newUser)
-  } else {
-res.status(400).send("users need a name")
-  }
-  })
+  app.get('/users/:Username', async (req, res) => {
+    await Users.findOne({ Username: req.params.Username })
+      .then((user) => {
+        res.json(user);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send('Error: ' + err);
+      });
+  });
 
   app.put("/users/:id", (req, res) => {
     const { id } = req.params;
@@ -156,8 +157,22 @@ app.get("/movies/directors/:directorName", (req, res) => {
     res.send("Welcome to my movie app");
   });
 
+  
+
   app.listen(8080, () => {
     console.log('Your app is listening on port 8080.');
   });
 
   
+
+  //app.post("/users", (req, res) => {
+  //  const newUser = req.body;
+  
+  //  if (newUser.name) {
+  //    newUser.id = uuid.v4();
+  //    users.push(newUser);
+  //    res.status(201).json(newUser)
+  //  } else {
+  //res.status(400).send("users need a name")
+  //  }
+   // })
