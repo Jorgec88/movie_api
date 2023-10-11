@@ -2,7 +2,7 @@ const express = require("express"),
 bodyParser = require('body-parser'),
 uuid = require('uuid');
 
-const morgan = require("morgan");
+//const morgan = require("morgan");
 const app = express();
 const mongoose = require('mongoose');
 const Models = require('./models.js');
@@ -13,7 +13,7 @@ const Users = Models.User;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-mongoose.connect("mongodb://localhost:8080/jcDB", { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect("mongodb://127.0.0.1/jcDB", { useNewUrlParser: true, useUnifiedTopology: true });
 
 
 //app.use(express.static("public"));
