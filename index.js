@@ -6,7 +6,8 @@ uuid = require('uuid');
 const app = express();
 const mongoose = require('mongoose');
 const Models = require('./models.js');
-const Movies = Models.Movie;
+
+const movies= Models.Movie;
 const Users = Models.User;
 
 
@@ -25,7 +26,44 @@ mongoose.connect("mongodb://127.0.0.1/jcDB", { useNewUrlParser: true, useUnified
     //res.status(500).send("Error!");
   //});
 
-  app.post('/users', async (req, res) => {
+  app.get("/movies", (req, res) => {
+    res.status(200).json(movies);
+  });
+
+  app.get("/movies/:title", (req, res) => {
+    const {title} = req.params;
+    const movie = movies.find(movie => movie.title === title );
+    if (movie) {
+      res.status(200).json(movies);
+    } else {
+    res.status(404).send ("movie not available")
+    }
+     
+ });
+
+ app.get("/movies/:genre", (req, res) => {
+  const {title} = req.params;
+  const movie = movies.find(movie => movie.genre === genre );
+  if (genre) {
+    res.status(200).json(genre);
+  } else {
+  res.status(404).send ("no such genre")
+  }
+   
+});
+
+app.get("/movies/directors/:directorName", (req, res) => {
+  const {directorName} = req.params;
+  const director = movies.find(movie => movie.director.name === directorName).director;
+  if (director) {
+    res.status(200).json(director);
+  } else {
+  res.status(404).send ("no such director")
+  }
+   
+});
+
+ app.post('/users', async (req, res) => {
     await Users.findOne({ Username: req.body.Username })
       .then((user) => {
         if (user) {
@@ -116,42 +154,6 @@ mongoose.connect("mongodb://127.0.0.1/jcDB", { useNewUrlParser: true, useUnified
 
 
 
-app.get("/movies", (req, res) => {
-    res.status(200).json(movies);
-  });
-
-  app.get("/movies/:title", (req, res) => {
-    const {title} = req.params;
-    const movie = movies.find(movie => movie.title === title );
-    if (movie) {
-      res.status(200).json(movies);
-    } else {
-    res.status(404).send ("movie not available")
-    }
-     
- });
-
- app.get("/movies/:genre", (req, res) => {
-  const {title} = req.params;
-  const movie = movies.find(movie => movie.genre === genre );
-  if (genre) {
-    res.status(200).json(genre);
-  } else {
-  res.status(404).send ("no such genre")
-  }
-   
-});
-
-app.get("/movies/directors/:directorName", (req, res) => {
-  const {directorName} = req.params;
-  const director = movies.find(movie => movie.director.name === directorName).director;
-  if (director) {
-    res.status(200).json(director);
-  } else {
-  res.status(404).send ("no such director")
-  }
-   
-});
 
   app.get('/', (req, res) => {
     res.send("Welcome to my movie app");
