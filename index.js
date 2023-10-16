@@ -1,8 +1,8 @@
-const express = require("express"),
- bodyParser = require("body-parser"),
- uuid = require("uuid");
+const express = require('express'),
+ bodyParser = require('body-parser'),
+ uuid = require('uuid');
 
-const morgan = require("morgan");
+//const morgan = require('morgan');
 const app = express();
 const mongoose = require('mongoose');
 const Models = require('./models.js');
@@ -10,30 +10,26 @@ const Models = require('./models.js');
 const Movies= Models.Movie;
 const Users = Models.User;
 
-mongoose.connect("mongodb://127.0.0.1/jcDB", { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect('mongodb://127.0.0.1/jcDB', { useNewUrlParser: true, useUnifiedTopology: true });
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+let auth = require('./auth')(app);
 
+const passport = require('passport');
+require('./passport');
 
+app.use(express.static("public"));
+//app.use(morgan('common'));
 
-//app.use(express.static("public"));
-app.use(morgan("common"));
-
-
-//app.use((err, req, res, next) => {
-  //  console.error(err.stack);
-    //res.status(500).send("Error!");
-  //});
-
-  app.get('/', (req, res) => {
-    res.send("Welcome to my movie app");
+app.get('/', (req, res) => {
+    res.send('Welcome to my movie app');
   });
   
-  app.get('/movies', (req, res) => {
-    Movies.find()
-    .then((movies) => {
+  app.get('/movies', passport.authenticate('jwt', { session: false }), async (req, res) => {
+    await Movies.find()
+     .then((movies) => {
     res.status(201).json(movies);
   })
   .catch((err) => {
@@ -53,29 +49,20 @@ app.use(morgan("common"));
       });
   });
 
-app.get('/movies/:title', (req, res) => {
-   Movies.findOne({ title: req.params.title })
+app.get('/movies/:title', passport.authenticate('jwt', { session: false }),
+async (req, res) => {
+   await Movies.findOne({ title: req.params.title })
     .then((movie) => {
-      res.json(movie);
+      response.status(200).json(movie);
     })
     .catch((err) => {
       console.error(err);
       res.status(500).send('Error: ' + err);
     });
-  });
+   }
+  );
   
-  
-    // const {title} = req.params;
-    //const movie = movies.find(movie => movie.title === title );
-    //if (movie) {
-    //  res.status(200).json(movies);
-    //} else {
-    //res.status(404).send ("movie not available")
-   // }
-     
- //});
-
- app.get('/genre/:Name', (req, res) => {
+  app.get('/genre/:Name', (req, res) => {
   Genres.findOne({ Name: req.params.Name })
    .then((genre) => {
     res.json(genre.Description);
@@ -86,16 +73,7 @@ app.get('/movies/:title', (req, res) => {
    });
   });  
  
-  // const {title} = req.params;
- // const movie = movies.find(movie => movie.genre === genre );
- // if (genre) {
-   // res.status(200).json(genre);
-  //} else {
-  //res.status(404).send ("no such genre")
-  //}
-   
-//});
-
+  
 app.get('/director/:Name', (req, res) => {
   Directors.findOne({ Name: req.params.Name })
    .then((director) => {
@@ -186,26 +164,8 @@ app.get('/director/:Name', (req, res) => {
         })
 
 
-
-
- 
-
-  
-
-  app.listen(8080, () => {
+app.listen(8080, () => {
     console.log('Your app is listening on port 8080.');
   });
 
   
-
-  //app.post("/users", (req, res) => {
-  //  const newUser = req.body;
-  
-  //  if (newUser.name) {
-  //    newUser.id = uuid.v4();
-  //    users.push(newUser);
-  //    res.status(201).json(newUser)
-  //  } else {
-  //res.status(400).send("users need a name")
-  //  }
-   // })
