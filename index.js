@@ -40,20 +40,20 @@ app.get('/movies', passport.authenticate('jwt', { session: false }), async (req,
 
 app.get('/users', async (req, res) => {
   await Users.find()
-      .then((users) => {
-        res.status(201).json(users);
-      })
-      .catch((err) => {
-        console.error(err);
-        res.status(500).send('Error: ' + err);
-      });
-  });
+    .then((users) => {
+      res.status(201).json(users);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
+});
 
 app.get('/movies/:title', passport.authenticate('jwt', { session: false }),
   async (req, res) => {
     await Movies.findOne({ title: req.params.title })
       .then((movie) => {
-        response.status(200).json(movie);
+        res.status(200).json(movie);
       })
       .catch((err) => {
         console.error(err);
@@ -66,23 +66,22 @@ app.get('/genre/:Name', (req, res) => {
   Genres.findOne({ Name: req.params.Name })
     .then((genre) => {
       res.json(genre.Description);
-   })
-   .catch((err) => {
-    console.error(err);
-    res.status(500).send('Error: ' + err);
-   });
-  });  
- 
-  
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
+}); 
+
 app.get('/director/:Name', (req, res) => {
   Directors.findOne({ Name: req.params.Name })
     .then((director) => {
       res.json(director);
     })
-   .catch((err) => {
-    console.error(err);
-    res.status(500).send('Error: ' + err);
-   });
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
 });
 
 app.post('/users', async (req, res) => {
@@ -123,22 +122,22 @@ app.get('/users/:Username', async (req, res) => {
     });
 });
 
-  app.put('/users/:id', (req, res) => {
-    const { id } = req.params;
-    const updateUser = req.body;
-  
-    let user = users.find(user => user.id === id);
-     
-    if (user) {
-      user.name = updateUser.name;
-      res.status(200).json(user);
-    } else {
-      res.status(400).send('users not found')
-    }
-    })
+app.put('/users/:id', (req, res) => {
+  const { id } = req.params;
+  const updateUser = req.body;
+
+  let user = users.find(user => user.id === id);
+
+  if (user) {
+    user.name = updateUser.name;
+    res.status(200).json(user);
+  } else {
+    res.status(400).send('users not found')
+  }
+})
 
 app.post('/users/:id/:movieTitle', (req, res) => {
-  const { id, moviTitle } = req.params;
+  const { id, movieTitle } = req.params;
   let user = users.find(user => user.id === id);
 
   if (user) {
@@ -156,7 +155,7 @@ app.delete('/users/:id/:movieTitle', (req, res) => {
 
   if (user) {
     user.favoriteMovies = user.favoriteMovies.filter(title => title !== movieTitle);
-    res.status(200).send(`${movieTitle} has been removed to users ${id}'s array`);;
+    res.status(200).send(`${movieTitle} has been removed to users ${id}'s array`);
   } else {
     res.status(400).send('users not found')
   }
