@@ -2,7 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const uuid = require('uuid');
 
-
 const morgan = require('morgan');
 const app = express();
 const mongoose = require('mongoose');
@@ -19,8 +18,7 @@ mongoose.connect('mongodb://127.0.0.1/jcDB', {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const auth = require('./auth')(app);
-
+let auth = require('./auth')(app);
 const passport = require('passport');
 require('./passport');
 
@@ -31,9 +29,7 @@ app.get('/', (req, res) => {
   res.send('Welcome to my movie app');
 });
 
-app.get(
-  '/movies',
-  passport.authenticate('jwt', { session: false }),
+app.get('/movies', passport.authenticate('jwt', { session: false }),
   async (req, res) => {
     await Movies.find()
       .then((movies) => {
@@ -46,20 +42,19 @@ app.get(
   }
 );
 
-app.get('/users', async (req, res) => {
-  await Users.find()
-    .then((users) => {
-      res.status(201).json(users);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send('Error: ' + err);
-    });
-});
+app.get('/users', passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    await Users.find()
+      .then((users) => {
+        res.status(201).json(users);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send('Error: ' + err);
+      });
+  });
 
-app.get(
-  '/movies/:title',
-  passport.authenticate('jwt', { session: false }),
+app.get('/movies/:title', passport.authenticate('jwt', { session: false }),
   async (req, res) => {
     await Movies.findOne({ title: req.params.title })
       .then((movie) => {
@@ -72,27 +67,29 @@ app.get(
   }
 );
 
-app.get('/genre/:Name', (req, res) => {
-  Genres.findOne({ Name: req.params.Name })
-    .then((genre) => {
-      res.json(genre.Description);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send('Error: ' + err);
-    });
-});
+app.get('/movies/genres/:genreName', passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    await Movies.findOne({ 'Genre.Name': req.params.genreName })
+      .then((movie) => {
+        res.json(movie.genre.Description);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send('Error: ' + err);
+      });
+  });
 
-app.get('/director/:Name', (req, res) => {
-  Directors.findOne({ Name: req.params.Name })
-    .then((director) => {
-      res.json(director);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send('Error: ' + err);
-    });
-});
+app.get('/movies/directors/:directorName', passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    await Movies.findOne({ 'Director.Name': req.params.directorName })
+      .then((movie) => {
+        res.json(movie.director);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send('Error: ' + err);
+      });
+  });
 
 app.post('/users', async (req, res) => {
   await Users.findOne({ Username: req.body.Username })
@@ -121,60 +118,63 @@ app.post('/users', async (req, res) => {
     });
 });
 
-app.get('/users/:Username', async (req, res) => {
-  await Users.findOne({ Username: req.params.Username })
-    .then((user) => {
-      res.json(user);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send('Error: ' + err);
-    });
-});
+app.get('/users/:Username', passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    await Users.findOne({ Username: req.params.Username })
+      .then((user) => {
+        res.json(user);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send('Error: ' + err);
+      });
+  });
 
-app.put('/users/:id', (req, res) => {
-  const { id } = req.params;
-  const updateUser = req.body;
+app.put('/users/:id', passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    const { id } = req.params;
+    const updateUser = req.body;
 
-  const user = users.find(user => user.id === id);
+    const user = Users.find(user => user.id === id);
 
-  if (user) {
-    user.name = updateUser.name;
-    res.status(200).json(user);
-  } else {
-    res.status(400).send('users not found')
-  }
-})
+    if (user) {
+      user.name = updateUser.name;
+      res.status(200).json(user);
+    } else {
+      res.status(400).send('users not found')
+    }
+  })
 
-app.post('/users/:id/:movieTitle', (req, res) => {
-  const { id, movieTitle } = req.params;
-  const user = users.find(user => user.id === id);
+app.post('/users/:id/:movieTitle', passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    const { id, movieTitle } = req.params;
+    const user = Users.find(user => user.id === id);
 
-  if (user) {
-    user.favoriteMovies.push(movieTitle);
-    // res.status(200).send(`${movieTitle} has been added to users ${id}'s array`);;
-  } else {
-    res.status(400).send('users not found')
-  }
-})
+    if (user) {
+      user.favoriteMovies.push(movieTitle);
+      res.status(200).send(`${movieTitle} has been added to users ${id}'s array`);
+    } else {
+      res.status(400).send('users not found')
+    }
+  })
 
-app.delete('/users/:id/:movieTitle', (req, res) => {
-  const { id, movieTitle } = req.params;
+app.delete('/users/:id/:movieTitle', passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    const { id, movieTitle } = req.params;
 
-  const user = users.find(user => user.id === id);
+    const user = Users.find(user => user.id === id);
 
-  if (user) {
-    user.favoriteMovies = user.favoriteMovies.filter(title => title !== movieTitle);
-    res.status(200).send(`${movieTitle} has been removed to users ${id}'s array`);
-  } else {
-    res.status(400).send('users not found')
-  }
-})
+    if (user) {
+      user.favoriteMovies = user.favoriteMovies.filter(title => title !== movieTitle);
+      res.status(200).send(`${movieTitle} has been removed to users ${id}'s array`);
+    } else {
+      res.status(400).send('users not found')
+    }
+  })
 
 app.listen(8080, () => {
   console.log('Your app is listening on port 8080.');
 });
-
 
 // const { check, validationResult } = require('express-validator');
 // app.get(
