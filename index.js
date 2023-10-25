@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const uuid = require('uuid');
+// const uuid = require('uuid');
 
 const morgan = require('morgan');
 const app = express();
@@ -18,16 +18,11 @@ mongoose.connect('mongodb://127.0.0.1/jcDB', {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-let auth = require('./auth')(app);
+const auth = require('./auth')(app);
 const passport = require('passport');
 require('./passport');
 
-app.use(express.static('public'));
 app.use(morgan('common'));
-
-app.get('/', (req, res) => {
-  res.send('Welcome to my movie app');
-});
 
 app.get('/movies', passport.authenticate('jwt', { session: false }),
   async (req, res) => {
@@ -39,8 +34,7 @@ app.get('/movies', passport.authenticate('jwt', { session: false }),
         console.error(err);
         res.status(500).send('Error: ' + err);
       });
-  }
-);
+  });
 
 app.get('/users', passport.authenticate('jwt', { session: false }),
   async (req, res) => {
@@ -171,6 +165,12 @@ app.delete('/users/:id/:movieTitle', passport.authenticate('jwt', { session: fal
       res.status(400).send('users not found')
     }
   })
+
+app.get('/', (req, res) => {
+  res.send('Welcome to my movie app');
+});
+
+app.use(express.static('public'));
 
 app.listen(8080, () => {
   console.log('Your app is listening on port 8080.');
