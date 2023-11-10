@@ -10,9 +10,8 @@ const Movies = Models.Movie;
 const Users = Models.User;
 
 mongoose.connect('mongodb://127.0.0.1/jcDB', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
+  useNewUrlParser: true, useUnifiedTopology: true, family: 4 }
+);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -93,7 +92,7 @@ app.get(
   (req, res) => {
     Movies.findOne({ 'Genre.Name': req.params.genreName })
       .then((result) => {
-        res.json(result ? result.Genre.description : null);
+        res.json(result ? result.Genre : null);
       })
 
       .catch((err) => {
@@ -179,20 +178,28 @@ app.get(
 );
 
 app.put(
-  '/users/:id',
+  '/users/:username',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    const { id } = req.params;
-    const updateUser = req.body;
-
-    const user = Users.find((user) => user.id === id);
-
-    if (user) {
-      user.name = updateUser.name;
-      res.status(200).json(user);
-    } else {
-      res.status(400).send('users not found');
-    }
+    Users.findOneAndUpdate({ Username: req.params.username },
+      {
+        $set:
+              {
+                Username: req.body.Username,
+                Password: req.body.Password,
+                Email: req.body.Email,
+                Birthday: req.body.Birthday
+              }
+      },
+      { new: true }
+    )
+      .then((updatedUser) => {
+        res.status(200).json(updatedUser);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send('Error: ' + err);
+      });
   }
 );
 
