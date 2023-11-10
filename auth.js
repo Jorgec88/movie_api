@@ -11,12 +11,13 @@ const generateJWTToken = (user) => {
     expiresIn: '7d',
     algorithm: 'HS256'
   });
-}
+};
 
 module.exports = (router) => {
   router.post('/login', (req, res) => {
     passport.authenticate('local', { session: false },
       (error, user, info) => {
+        console.log('Passport authenticated:', user);
         if (error || !user) {
           return res.status(400).json({
             message: 'Something is not right',
@@ -30,6 +31,7 @@ module.exports = (router) => {
           const token = generateJWTToken(user.toJSON());
           return res.json({ user, token });
         });
-      })(req, res);
+      }
+    )(req, res);
   });
-}
+};
