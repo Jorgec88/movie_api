@@ -10,8 +10,10 @@ const Movies = Models.Movie;
 const Users = Models.User;
 
 mongoose.connect('mongodb://127.0.0.1/jcDB', {
-  useNewUrlParser: true, useUnifiedTopology: true, family: 4 }
-);
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  family: 4
+});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -181,15 +183,15 @@ app.put(
   '/users/:username',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    Users.findOneAndUpdate({ Username: req.params.username },
+    Users.findOneAndUpdate(
+      { Username: req.params.username },
       {
-        $set:
-              {
-                Username: req.body.Username,
-                Password: req.body.Password,
-                Email: req.body.Email,
-                Birthday: req.body.Birthday
-              }
+        $set: {
+          Username: req.body.Username,
+          Password: req.body.Password,
+          Email: req.body.Email,
+          Birthday: req.body.Birthday
+        }
       },
       { new: true }
     )
@@ -265,8 +267,9 @@ app.get('/', (req, res) => {
   res.send('Welcome to my movie app');
 });
 
-app.listen(8080, () => {
-  console.log('Your app is listening on port 8080.');
+const port = process.env.PORT || 8080;
+app.listen(port, '0.0.0.0', () => {
+  console.log('Listening on port ' + port);
 });
 
 // const { check, validationResult } = require('express-validator');
