@@ -9,10 +9,15 @@ const { check, validationResult } = require('express-validator');
 const Movies = Models.Movie;
 const Users = Models.User;
 
-mongoose.connect('mongodb://127.0.0.1/jcDB', {
+// mongoose.connect('mongodb://127.0.0.1/jcDB', {
+// useNewUrlParser: true,
+// useUnifiedTopology: true,
+// family: 4
+// });
+// 'mongodb+srv://jcarralero88:lahabanafiguresking88@mymoviesapp.tv8o5z0.mongodb.net/jcDB?retryWrites=true&w=majority'
+mongoose.connect(process.env.CONNECTION_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
-  family: 4
+  useUnifiedTopology: true
 });
 
 app.use(bodyParser.json());
@@ -271,6 +276,10 @@ const port = process.env.PORT || 8080;
 app.listen(port, '0.0.0.0', () => {
   console.log('Listening on port ' + port);
 });
+
+// mongoimport --uri mongodb+srv://jcarralero88:lahabanafiguresking88@mymoviesapp.tv8o5z0.mongodb.net/jcDB --collection movies --type json --file ../"C:\Users\jorge\Documents\movies.json
+
+// mongoimport --uri mongodb+srv://jcarralero88:lahabanafiguresking88@mymoviesapp.tv8o5z0.mongodb.net/jcDB --collection movies --type json --file movies.json"
 
 // const { check, validationResult } = require('express-validator');
 // app.get(
